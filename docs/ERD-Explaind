@@ -1,122 +1,288 @@
-University Elective Course Management System ERD – Explained
-Overview
+# University Elective Course Management System ERD – Explained
 
-This database is designed to manage a university elective course system, including academic structure, students, instructors, courses, sections, and enrollments.
+## Overview
 
-Core Design Principles
-Normalized design to reduce redundancy
-Clear separation of academic entities
-Shared person entity for students and instructors
-Many-to-many relationships resolved through junction tables
-Entities
-University
+This database is designed to manage a **University Elective Course Management System**, including academic structure, students, instructors, courses, semesters, sections, and enrollment records.
 
-Stores university information and acts as the top-level academic entity.
+The system supports organizing university academic entities and managing student enrollment in elective and compulsory courses.
 
-Relationship:
-One university → many schools
+---
 
-School
+## Core Design Principles
 
-Represents academic schools/faculties.
+- Normalized relational database design to reduce redundancy
+- Clear separation of academic entities
+- Shared `Person` entity for reusable personal information
+- Primary and foreign key constraints for referential integrity
+- Junction table design to resolve many-to-many relationships
+- Scalable academic hierarchy
 
-Relationship:
-One school → many departments
+---
 
-Department
+## Domain Summary
 
-Represents subdivisions inside schools.
+This system models the academic structure of a university and how students interact with course offerings.
 
-Relationship:
-One department → many majors
+Academic hierarchy:
 
-Major
+**University → School → Department → Major → Student**
 
-Represents academic programs.
+Operational workflow:
 
-Relationship:
-One major → many students
+**Course → Section → Enrollment ← Student**
 
-Person
+This structure supports academic management while keeping the schema organized and scalable.
 
-Stores shared personal information such as name, gender, and birthdate.
+---
 
-Used by:
+## Entities
 
-Student
-Instructor
-Student
+### University
+Stores university-level information.
 
+**Includes:**
+- University ID
+- University Name
+- Website
+- Address
+- Established Year
+
+**Relationship:**
+- One university can have many schools (**1:M**)
+
+---
+
+### School
+Represents academic schools or faculties.
+
+**Includes:**
+- School ID
+- School Name
+- University ID
+- Dean Person ID
+
+**Relationships:**
+- Belongs to one university
+- One school can have many departments (**1:M**)
+- One school can have many instructors (**1:M**)
+
+---
+
+### Department
+Represents academic departments within a school.
+
+**Includes:**
+- Department ID
+- Department Name
+- School ID
+
+**Relationship:**
+- One department can have many majors (**1:M**)
+
+---
+
+### Major
+Represents academic programs or specializations.
+
+**Includes:**
+- Major ID
+- Major Name
+- Duration
+- Department ID
+
+**Relationship:**
+- One major can have many students (**1:M**)
+
+---
+
+### Person
+Stores shared personal information.
+
+Used to avoid duplicated student/instructor data.
+
+**Includes:**
+- Person ID
+- Full Name
+- Birth Date
+- Gender
+
+**Used by:**
+- Student
+- Instructor
+- School dean reference
+
+---
+
+### Student
 Represents enrolled students.
 
-Relationship:
-One student → many enrollments
+**Includes:**
+- Student ID
+- Person ID
+- Major ID
+- Enrollment Year
 
-Instructor
+**Relationship:**
+- One student can have many enrollments (**1:M**)
 
+---
+
+### Instructor
 Represents teaching staff.
 
-Relationship:
-One instructor → many sections
+**Includes:**
+- Instructor ID
+- Person ID
+- School ID
+- Title
 
-Course
+**Relationship:**
+- One instructor can teach many sections (**1:M**)
 
-Represents academic courses.
+---
 
-Relationship:
-One course → many sections
+### Course
+Represents course definitions.
 
-Semester
+**Includes:**
+- Course ID
+- Course Name
+- Course Type
+- Credits
 
+**Business Rule:**
+- Courses may be elective or compulsory
+
+**Relationship:**
+- One course can have many sections (**1:M**)
+
+---
+
+### Semester
 Represents academic periods.
 
-Examples:
+**Examples:**
+- Fall 2025
+- Spring 2026
+- Summer 2026
 
-Fall 2025
-Spring 2026
+**Includes:**
+- Semester ID
+- Semester Name
+- Start Date
+- End Date
 
-Relationship:
-One semester → many sections
+**Relationship:**
+- One semester can contain many sections (**1:M**)
 
-Section
+---
 
-Represents actual course offerings.
+### Section
+Represents scheduled course offerings.
 
-Stores:
+Separates course definition from actual delivery.
 
-class time
-location
-instructor
-semester
-course
-Enrollment
+**Includes:**
+- Section ID
+- Section Name
+- Class Number
+- Class Location
+- Class Time
+- Enrollment Capacity
+- Course ID
+- Semester ID
+- Instructor ID
 
-Stores:
+**Relationships:**
+- Belongs to one course
+- Belongs to one semester
+- Assigned to one instructor
 
-enrollment date
-grade
-status
-Relationships Summary
-Relationship	Type
-University → School	1:M
-School → Department	1:M
-Department → Major	1:M
-Major → Student	1:M
-Person → Student	1:1
-Person → Instructor	1:1
-Course → Section	1:M
-Semester → Section	1:M
-Instructor → Section	1:M
-Student ↔ Section	M:N via Enrollment
-Design Decisions
-Person entity avoids duplicating student/instructor personal data.
-Section entity separates course definitions from actual scheduled offerings.
-Enrollment table resolves the many-to-many relationship between students and sections.
-Academic hierarchy organizes data clearly from university down to majors.
-Notes
+---
 
-Current ERD may still need refinement for:
-stricter business constraints
+### Enrollment
+Represents student course registrations.
+
+Acts as the junction table between students and sections.
+
+**Includes:**
+- Enrollment ID
+- Student ID
+- Section ID
+- Enrollment Date
+- Regular Grade
+- Final Exam Grade
+- Status
+
+**Business Rules:**
+- A student can enroll in multiple sections
+- A section can contain multiple students
+- Grades may remain NULL until assigned
+
+---
+
+## Relationship Summary
+
+| Relationship | Type |
+|------------|------|
+| University → School | 1:M |
+| School → Department | 1:M |
+| School → Instructor | 1:M |
+| Department → Major | 1:M |
+| Major → Student | 1:M |
+| Person → Student | 1:1 (logical inheritance) |
+| Person → Instructor | 1:1 (logical inheritance) |
+| Course → Section | 1:M |
+| Semester → Section | 1:M |
+| Instructor → Section | 1:M |
+| Student ↔ Section | M:N (via Enrollment) |
+
+---
+
+## Design Decisions
+
+### Shared Person Entity
+The `Person` table stores common personal information used by both students and instructors, reducing redundancy.
+
+---
+
+### Enrollment as Junction Table
+The `Enrollment` table resolves the many-to-many relationship between students and sections.
+
+Without this design, student-course registration would be difficult to manage efficiently.
+
+---
+
+### Section-Based Course Delivery
+The `Section` entity separates course definitions from scheduled offerings.
+
+This allows:
+
+- Database Systems → Fall 2025 Section A
+- Database Systems → Spring 2026 Section B
+
+---
+
+### Academic Hierarchy
+The schema follows a scalable academic structure:
+
+```text
+University
+   └── School
+         └── Department
+               └── Major
+                     └── Student
+
+Future Improvements
+Add classroom entity
+Add attendance tracking
+Add course prerequisites
+Prevent duplicate enrollment in the same course within one semester
+Add triggers and stored procedures
+Add reporting views
+Add stricter validation rules
+
 Conclusion
 
-This ERD provides a solid foundation for a university elective course management system with a clear academic structure and scalable design.
+This ERD provides a scalable and well-structured foundation for a University Elective Course Management System, 
+with normalized relational design, clear academic hierarchy, and efficient course enrollment management.
