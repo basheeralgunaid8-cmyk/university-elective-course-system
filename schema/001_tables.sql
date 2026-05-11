@@ -5,38 +5,40 @@ USE Universtiy;
 GO
 CREATE TABLE University
 (
-UniversityID INT PRIMARY KEY NOT NULL,
-UniverstiyName NVARCHAR(100) NOT NULL,
-Website NVARCHAR(50) NOT NULL,
-Address NVARCHAR(100) NOT NULL,
-EstablishedYear INT NOT NULL
-)
+    UniversityID INT PRIMARY KEY NOT NULL,
+    UniverstiyName NVARCHAR(100) NOT NULL,
+    Website NVARCHAR(50) NOT NULL,
+    Address NVARCHAR(100) NOT NULL,
+    EstablishedYear INT NOT NULL
+);
+
 
 CREATE TABLE School 
 (
 SchoolID INT PRIMARY KEY NOT NULL,
-SchoolName NVARCHAR(100) NOT NULL
+SchoolName NVARCHAR(100) NOT NULL,
+ UniversityID INT NOT NULL,
+DeanPersonID INT NOT NULL
 )
 
 
 
 CREATE TABLE Department
 (
-DepartmentID INT PRIMARY KEY NOT NULL,
-DepartmentName NVARCHAR(100) NOT NULL
-)
+    DepartmentID INT PRIMARY KEY NOT NULL,
+    DepartmentName NVARCHAR(100) NOT NULL,
+    SchoolID INT NOT NULL
+);
 
 
 
 CREATE TABLE Major
 (
-MajorID  INT PRIMARY KEY NOT NULL,
-MajorName NVARCHAR(50) NOT NULL,
-Duration INT NOT NULL-- I choose int type because it is a time to use datetime type 
-
-)
-
-
+    MajorID INT PRIMARY KEY NOT NULL,
+    MajorName NVARCHAR(50) NOT NULL,
+    Duration INT NOT NULL,--semester=8
+    DepartmentID INT NOT NULL
+);
 
 CREATE TABLE Person
 (
@@ -51,7 +53,9 @@ CREATE TABLE Person
 CREATE TABLE  Instructor
 (
  InstructorID INT PRIMARY KEY NOT NULL,
- Title NVARCHAR(200) NOT NULL
+ Title NVARCHAR(200) NOT NULL,
+ SchoolID INT NOT NULL,
+ PersonID INT NOT NULL
 )
 
 
@@ -59,7 +63,9 @@ CREATE TABLE  Instructor
 CREATE TABLE Student 
 (
 StudentID INT PRIMARY KEY,
-EnrollmentYear INT NOT NULL
+EnrollmentYear INT NOT NULL,
+PersonID INT NOT NULL,
+MajorID INT NOT NULL
 )
 
 
@@ -78,8 +84,11 @@ CREATE TABLE  Section
   SectionName NVARCHAR(200) NOT NULL,
   ClassNo INT  NOT NULL,
   ClassLocation NVARCHAR(100),
-  ClassTime DATETIME NOT NULL,
-  EnrollmentCapacity INT  NOT NULL
+  ClassTime TIME NOT NULL,
+  EnrollmentCapacity INT  NOT NULL,
+  CourseID INT NOT NULL,
+ SemesterID INT NOT NULL,
+ InstructorID INT NOT NULL
 )
 
 
@@ -98,7 +107,9 @@ CREATE TABLE Enrollment
   EnrollDate DATE,
   RegularGrade DECIMAL(5,2) ,
   FinalExamGrade DECIMAL(5,2),
-  Status NVARCHAR(100)
+  Status NVARCHAR(100),
+  StudentID INT NOT NULL,
+  SectionID INT NOT NULL
 )
 
 
